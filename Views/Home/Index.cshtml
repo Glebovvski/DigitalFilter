@@ -1,0 +1,93 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+
+<canvas id="H10" width="1200" height="600"></canvas>
+<canvas id="H18" width="1200" height="600"></canvas>
+<canvas id="H111" width="1200" height="600"></canvas>
+<canvas id="Full" width="1200" height="600"></canvas>
+
+<script src="~/Scripts/Chart.js"></script>
+<script>
+    var jsX_H10 = @Html.Raw(ViewBag.jsonX_H10);
+
+    var jsY_H10 = @Html.Raw(ViewBag.jsonY_H10);
+    var jsY_H18 = @Html.Raw(ViewBag.jsonY_H18);
+    var jsY_H111 = @Html.Raw(ViewBag.jsonY_H111);
+    var jsY_Full = @Html.Raw(ViewBag.jsonY_Full);
+
+    var ctxH10 = document.getElementById('H10').getContext('2d');
+    var chartH10 = new Chart(ctxH10, {
+        // The type of chart we want to create
+        type: 'line',
+        // The data for our dataset
+        data: {
+            labels: jsX_H10,
+            datasets: [{
+                label: 'H10',
+                backgroundColor: 'rgb(255, 99, 132,0)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: jsY_H10
+            }]
+        },
+        // Configuration options go here
+        options: {}
+    });
+
+    var ctxh18 = document.getElementById('H18').getContext('2d');
+    var charth18 = new Chart(ctxh18, {
+        // the type of chart we want to create
+        type: 'line',
+
+        // the data for our dataset
+        data: {
+            labels: jsX_H10,
+            datasets: [{
+                label: 'H18',
+                backgroundColor: 'rgb(255, 99, 132,0)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: jsY_H18
+            }]
+        },
+        // configuration options go here
+        options: {}
+    });
+
+    var ctxH111 = document.getElementById('H111').getContext('2d');
+    var chartH111 = new Chart(ctxH111, {
+        // The type of chart we want to create
+        type: 'line',
+        // The data for our dataset
+        data: {
+            labels: jsX_H10,
+            datasets: [{
+                label: 'H111',
+                backgroundColor: 'rgb(255, 99, 132,0)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: jsY_H111
+            }]
+        },
+        // Configuration options go here
+        options: {}
+    });
+
+    var ctxFull = document.getElementById('Full').getContext('2d');
+    var chartH111 = new Chart(ctxFull, {
+        // The type of chart we want to create
+        type: 'line',
+        // The data for our dataset
+        data: {
+            labels: jsX_H10,
+            datasets: [{
+                label: 'Full',
+                backgroundColor: 'rgb(255, 99, 132,0)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: jsY_Full
+            }]
+        },
+        // Configuration options go here
+        options: {}
+    });
+
+</script>

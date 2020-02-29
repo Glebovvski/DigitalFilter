@@ -4,12 +4,13 @@ using System.Linq;
 using System.Numerics;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 
 namespace DigitalFilter_DIPLOMA.Controllers
 {
     public class HomeController : Controller
     {
-        const int m = 50;
+        //int m = 50;
         const int d = 12;
         double b1k = 0;
         double b2 = 1 - Math.Pow(2, -d);
@@ -18,24 +19,93 @@ namespace DigitalFilter_DIPLOMA.Controllers
         double xkk = 0;
         double x;//0,0.01..Pi
         double t;//r^m
-        public ActionResult Index()
+        [OutputCache(Location = System.Web.UI.OutputCacheLocation.None)]
+        public ActionResult Index(int m = 50)
         {
-            //double x = 0;
             r = Math.Sqrt(b2);
             t = Math.Pow(r, m);
             double yH10 = 0;
             double yH18 = 0;
             double yH111 = 0;
             double yFull = 0;
+            double yLogFull = 0;
             double akk = 0;
             Dictionary<string, double> H10 = new Dictionary<string, double>();
             Dictionary<string, double> H18 = new Dictionary<string, double>();
             Dictionary<string, double> H111 = new Dictionary<string, double>();
             Dictionary<string, double> Full = new Dictionary<string, double>();
+            Dictionary<string, double> LogFull = new Dictionary<string, double>();
 
             for (double x = 0; x <= Math.PI; x += 0.01)
             {
-                double Sum = 0;
+                Complex Sum = 0;
+                yH10 = Complex.Abs(1 - 1 * Complex.Exp(new Complex(0, -2 * x)));
+                yH18 = Complex.Abs(1 - t * (Complex.Exp(new Complex(0, -m * x))));
+                //nodes=Pi/(m/2)
+                //show akk
+                //set pp=кількість вузлів у зоні пропускання (2..20) default=4
+                for (int k = 9; k <= 14; k++)
+                {
+                    switch (k)
+                    {
+                        case 9:
+                        case 14:
+                            akk = 0.35;
+                            break;
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                            akk = 1;
+                            break;
+                    }
+
+                    xkk = k * (2 * (Math.PI / m));
+                    b1k = -2 * r * Math.Cos(xkk);
+                    Sum += akk * (Math.Pow(-1, k) / (1 + b1k * Complex.Exp(new Complex(0, -x)) + b2 * Complex.Exp(new Complex(0, -2 * x))));
+
+                }
+                yH111 = Complex.Abs(Sum);
+                yFull = yH10 * yH18 * (yH111 / m);
+                yLogFull = -20 * Math.Log10(yFull);
+                if (!Double.IsInfinity(yLogFull))
+                { //yLogFull = 100;
+
+                    H10.Add(x.ToString("0.00"), yH10);
+                    H18.Add(x.ToString("0.00"), yH18);
+                    H111.Add(x.ToString("0.00"), yH111);
+                    Full.Add(x.ToString("0.00"), yFull);
+                    LogFull.Add(x.ToString("0.00"), yLogFull);
+                }
+            }
+            ViewBag.M = m;
+            Serialize_H10(H10);
+            Serialize_H18(H18);
+            Serialize_H111(H111);
+            Serialize_Full(Full);
+            Serialize_LogFull(LogFull);
+            return View();
+        }
+
+        private void CalculateGraphs(int m)
+        {
+            r = Math.Sqrt(b2);
+            t = Math.Pow(r, m);
+            double yH10 = 0;
+            double yH18 = 0;
+            double yH111 = 0;
+            double yFull = 0;
+            double yLogFull = 0;
+            double akk = 0;
+            Dictionary<string, double> H10 = new Dictionary<string, double>();
+            Dictionary<string, double> H18 = new Dictionary<string, double>();
+            Dictionary<string, double> H111 = new Dictionary<string, double>();
+            Dictionary<string, double> Full = new Dictionary<string, double>();
+            Dictionary<string, double> LogFull = new Dictionary<string, double>();
+
+            for (double x = 0; x <= Math.PI; x += 0.01)
+            {
+                Complex Sum = 0;
                 yH10 = Complex.Abs(1 - 1 * Complex.Exp(new Complex(0, -2 * x)));
                 yH18 = Complex.Abs(1 - t * (Complex.Exp(new Complex(0, -m * x))));
 
@@ -57,22 +127,28 @@ namespace DigitalFilter_DIPLOMA.Controllers
 
                     xkk = k * (2 * (Math.PI / m));
                     b1k = -2 * r * Math.Cos(xkk);
-                    Sum += Complex.Abs(akk * (Math.Pow(-1, k) / (1 + b1k * Complex.Exp(new Complex(0, -x)) + b2 * Complex.Exp(new Complex(0, -2 * x)))));
+                    Sum += akk * (Math.Pow(-1, k) / (1 + b1k * Complex.Exp(new Complex(0, -x)) + b2 * Complex.Exp(new Complex(0, -2 * x))));
 
                 }
-                yH111 = Sum;
+                yH111 = Complex.Abs(Sum);
+                yFull = yH10 * yH18 * (yH111 / m);
+                yLogFull = -20 * Math.Log10(yFull);
+                if (!Double.IsInfinity(yLogFull))
+                { //yLogFull = 100;
 
-                H10.Add(x.ToString("0.00"), yH10);
-                H18.Add(x.ToString("0.00"), yH18);
-                H111.Add(x.ToString("0.00"), yH111);
-                yFull = yH10 * yH18 * yH111/m ; //Complex.Abs(1 - 1 * Complex.Exp(new Complex(0, -2 * x)) * (1 - t * (Complex.Exp(new Complex(0, -m * x)))) * (yH111 / m));//
-                Full.Add(x.ToString("0.00"), yFull);
+                    H10.Add(x.ToString("0.00"), yH10);
+                    H18.Add(x.ToString("0.00"), yH18);
+                    H111.Add(x.ToString("0.00"), yH111);
+                    Full.Add(x.ToString("0.00"), yFull);
+                    LogFull.Add(x.ToString("0.00"), yLogFull);
+                }
             }
+            ViewBag.M = m;
             Serialize_H10(H10);
             Serialize_H18(H18);
             Serialize_H111(H111);
             Serialize_Full(Full);
-            return View();
+            Serialize_LogFull(LogFull);
         }
 
         private void Serialize_H10(Dictionary<string, double> H10)
@@ -105,6 +181,13 @@ namespace DigitalFilter_DIPLOMA.Controllers
             List<double> arrY_Full = Full.Values.ToList();
             string jsonY_Full = Newtonsoft.Json.JsonConvert.SerializeObject(arrY_Full);
             ViewBag.jsonY_Full = jsonY_Full;
+        }
+
+        private void Serialize_LogFull(Dictionary<string, double> LogFull)
+        {
+            List<double> arrY_LogFull = LogFull.Values.ToList();
+            string jsonY_LogFull = Newtonsoft.Json.JsonConvert.SerializeObject(arrY_LogFull);
+            ViewBag.jsonY_LogFull = jsonY_LogFull;
         }
 
         public ActionResult About()

@@ -1,12 +1,19 @@
 ﻿@{
     ViewBag.Title = "Home Page";
 }
+<link rel="stylesheet" href="~/Content/jquery-ui.css">
+<p>
+    <label for="amount">Filter order:</label>
+    <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+</p>
 
+<div id="slider-range-min"></div>
 
 <canvas id="H10" width="1200" height="600"></canvas>
 <canvas id="H18" width="1200" height="600"></canvas>
 <canvas id="H111" width="1200" height="600"></canvas>
 <canvas id="Full" width="1200" height="600"></canvas>
+<canvas id="LogFull" width="1200" height="600"></canvas>
 
 <script src="~/Scripts/Chart.js"></script>
 <script>
@@ -16,6 +23,7 @@
     var jsY_H18 = @Html.Raw(ViewBag.jsonY_H18);
     var jsY_H111 = @Html.Raw(ViewBag.jsonY_H111);
     var jsY_Full = @Html.Raw(ViewBag.jsonY_Full);
+    var jsY_LogFull = @Html.Raw(ViewBag.jsonY_LogFull);
 
     var ctxH10 = document.getElementById('H10').getContext('2d');
     var chartH10 = new Chart(ctxH10, {
@@ -73,14 +81,14 @@
     });
 
     var ctxFull = document.getElementById('Full').getContext('2d');
-    var chartH111 = new Chart(ctxFull, {
+    var chartFull = new Chart(ctxFull, {
         // The type of chart we want to create
         type: 'line',
         // The data for our dataset
         data: {
             labels: jsX_H10,
             datasets: [{
-                label: 'Full',
+                label: 'H10(x)*H18(x)*H111/m',
                 backgroundColor: 'rgb(255, 99, 132,0)',
                 borderColor: 'rgb(255, 99, 132)',
                 data: jsY_Full
@@ -90,4 +98,44 @@
         options: {}
     });
 
+    var ctxLogFull = document.getElementById('LogFull').getContext('2d');
+    var chartLogFull = new Chart(ctxLogFull, {
+        // The type of chart we want to create
+        type: 'line',
+        // The data for our dataset
+        data: {
+            labels: jsX_H10,
+            datasets: [{
+                label: '-20*log(H10(x)*H18(x)*H111/m)',
+                backgroundColor: 'rgb(255, 99, 132,0)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: jsY_LogFull
+            }]
+        },
+        // Configuration options go here
+        options: {}
+    });
+
+</script>
+
+<script src="~/Scripts/jquery-3.4.1.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+<script>
+    $(function () {
+        $("#slider-range-min").slider({
+            range: "min",
+            value: @ViewBag.M,
+            min: 18,
+            max: 502, //step=4
+            slide: function (event, ui) {
+                $("#amount").val( ui.value);
+            },
+            change: function (event, ui) {
+                var val = $("#amount").val();
+                var url = '@Url.Action("Index","Home", new { m="_val_"})'
+                window.location.href = url.replace("_val_",val);
+            }
+        });
+        $("#amount").val( $("#slider-range-min").slider("value"));
+    });
 </script>
